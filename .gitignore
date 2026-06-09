@@ -1,0 +1,8 @@
+# folders
+comprovantes
+relatorios
+
+*__pycache__/
+
+venv/
+dist
