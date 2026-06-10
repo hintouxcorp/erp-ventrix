@@ -7,4 +7,4 @@ relatorios
 venv/
 dist
 main.spec
-build/
+build

@@ -1,7 +1,21 @@
 import sqlite3
 from pathlib import Path
+import os
 
-DB_PATH = Path(__file__).parent / "vendrix.db"
+APP_DIR = Path(os.getenv("APPDATA")) / "Vendrix"
+
+APP_DIR.mkdir(parents=True, exist_ok=True)
+
+DB_PATH = APP_DIR / "vendrix.db"
+
+APP_DIR = Path(os.getenv("APPDATA")) / "Vendrix"
+
+RELATORIOS_DIR = APP_DIR / "relatorios"
+COMPROVANTES_DIR = APP_DIR / "comprovantes"
+
+APP_DIR.mkdir(parents=True, exist_ok=True)
+RELATORIOS_DIR.mkdir(exist_ok=True)
+COMPROVANTES_DIR.mkdir(exist_ok=True)
 
 
 def get_connection():
