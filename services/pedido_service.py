@@ -35,7 +35,7 @@ class PedidoService:
         )
 
     @staticmethod
-    def criar_pedido(cliente, telefone, origem, itens):
+    def criar_pedido(cliente, telefone, origem, itens, desconto_tipo, desconto_valor):
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -45,12 +45,21 @@ class PedidoService:
         # 1. salva pedido (header)
         cursor.execute("""
             INSERT INTO pedidos (
-                codigo, cliente, telefone, origem, status, data_criacao
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                codigo,
+                cliente,
+                telefone,
+                desconto_tipo,
+                desconto_valor,
+                origem,
+                status,
+                data_criacao
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             codigo,
             cliente,
             telefone,
+            desconto_tipo,
+            desconto_valor,
             origem,
             "PAGO",
             datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -91,6 +100,8 @@ class PedidoService:
                 p.codigo,
                 p.cliente,
                 p.telefone,
+                p.desconto_tipo,
+                p.desconto_valor,
                 p.origem,
                 p.status,
                 p.data_criacao,
@@ -235,6 +246,8 @@ class PedidoService:
                 p.codigo,
                 p.cliente,
                 p.telefone,
+                p.desconto_tipo,
+                p.desconto_valor,
                 p.origem,
                 p.status,
                 p.data_criacao,
@@ -255,6 +268,7 @@ class PedidoService:
         pedidos_map = {}
 
         for r in rows:
+
             codigo = r[0]
 
             if codigo not in pedidos_map:
@@ -262,20 +276,22 @@ class PedidoService:
                     "codigo": r[0],
                     "cliente": r[1],
                     "telefone": r[2],
-                    "origem": r[3],
-                    "status": r[4],
-                    "data_criacao": r[5],
+                    "desconto_tipo": r[3],
+                    "desconto_valor": r[4],
+                    "origem": r[5],
+                    "status": r[6],
+                    "data_criacao": r[7],
                     "itens": []
                 }
 
             pedidos_map[codigo]["itens"].append({
-                "produto": r[6],
-                "quantidade": r[7],
-                "valor_unitario": r[8],
-                "custo_unitario": r[9],
+                "produto": r[8],
+                "quantidade": r[9],
+                "valor_unitario": r[10],
+                "custo_unitario": r[11]
             })
 
-        return list(pedidos_map.values())
+        return list(pedidos_map.values())[:limite]
     
     @staticmethod
     def vendas_por_dia():

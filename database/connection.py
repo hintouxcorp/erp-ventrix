@@ -35,6 +35,8 @@ def create_tables():
         codigo TEXT UNIQUE,
         cliente TEXT,
         telefone TEXT,
+        desconto_tipo TEXT,
+        desconto_valor REAL,
         origem TEXT,
         status TEXT,
         data_criacao TEXT

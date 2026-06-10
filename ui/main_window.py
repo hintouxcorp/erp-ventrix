@@ -257,16 +257,22 @@ class MainWindow(QMainWindow):
         for row, pedido in enumerate(pedidos):
 
             total_liquido = sum(
-                i["valor_unitario"] * i["quantidade"]
+                float(i["valor_unitario"]) * int(i["quantidade"])
                 for i in pedido["itens"]
             )
 
             lucro_total = sum(
-                (i["valor_unitario"] - i["custo_unitario"]) * i["quantidade"]
+                (
+                    float(i["valor_unitario"])
+                    - float(i["custo_unitario"])
+                ) * int(i["quantidade"])
                 for i in pedido["itens"]
             )
 
-            quantidade_total = sum(i["quantidade"] for i in pedido["itens"])
+            quantidade_total = sum(
+                int(i["quantidade"])
+                for i in pedido["itens"]
+            )
 
             self.tabela_ultimos.setItem(row, 0, QTableWidgetItem(pedido["codigo"]))
             self.tabela_ultimos.setItem(row, 1, QTableWidgetItem(pedido["cliente"]))

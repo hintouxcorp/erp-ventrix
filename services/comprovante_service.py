@@ -23,9 +23,14 @@ class ComprovanteService:
                 codigo,
                 cliente,
                 telefone,
+
+                desconto_tipo,
+                desconto_valor,
+
                 origem,
                 status,
                 data_criacao
+
             FROM pedidos
             WHERE codigo = ?
         """, (codigo_pedido,))
@@ -54,13 +59,29 @@ class ComprovanteService:
         conn.close()
 
         # =========================
-        # CALCULA TOTAL
+        # CALCULA TOTAIS
         # =========================
 
-        total = 0
+        subtotal = 0
 
         for item in itens:
-            total += item[1] * item[2]
+            subtotal += item[1] * item[2]
+
+        desconto_tipo = pedido[3]
+        desconto_valor = pedido[4] or 0
+
+        desconto = 0
+
+        if desconto_tipo == "Valor Fixo":
+            desconto = desconto_valor
+
+        elif desconto_tipo == "Percentual":
+            desconto = subtotal * desconto_valor / 100
+
+        total = subtotal - desconto
+
+        if total < 0:
+            total = 0
 
         # =========================
         # CRIA PASTA
@@ -91,7 +112,9 @@ class ComprovanteService:
 
         y = altura - 50
 
-        # Logo/Título
+        # =========================
+        # TÍTULO
+        # =========================
 
         c.setFont(
             "Helvetica-Bold",
@@ -119,7 +142,9 @@ class ComprovanteService:
 
         y -= 40
 
-        # Dados pedido
+        # =========================
+        # DADOS DO CLIENTE
+        # =========================
 
         c.setFont(
             "Helvetica",
@@ -153,12 +178,14 @@ class ComprovanteService:
         c.drawString(
             50,
             y,
-            f"Data: {pedido[5]}"
+            f"Data: {pedido[7]}"
         )
 
         y -= 35
 
-        # Linha
+        # =========================
+        # LINHA
+        # =========================
 
         c.line(
             50,
@@ -169,7 +196,9 @@ class ComprovanteService:
 
         y -= 25
 
-        # Cabeçalho itens
+        # =========================
+        # CABEÇALHO ITENS
+        # =========================
 
         c.setFont(
             "Helvetica-Bold",
@@ -201,7 +230,7 @@ class ComprovanteService:
 
         for produto, quantidade, valor in itens:
 
-            subtotal = quantidade * valor
+            subtotal_item = quantidade * valor
 
             quantidade_total += quantidade
 
@@ -226,12 +255,10 @@ class ComprovanteService:
             c.drawString(
                 480,
                 y,
-                f"R$ {subtotal:.2f}"
+                f"R$ {subtotal_item:.2f}"
             )
 
             y -= 20
-
-            # Nova página se necessário
 
             if y < 100:
 
@@ -250,6 +277,10 @@ class ComprovanteService:
 
         y -= 30
 
+        # =========================
+        # RESUMO FINANCEIRO
+        # =========================
+
         c.setFont(
             "Helvetica-Bold",
             11
@@ -266,10 +297,55 @@ class ComprovanteService:
         c.drawString(
             50,
             y,
-            f"Valor Total: R$ {total:.2f}"
+            f"Subtotal: R$ {subtotal:.2f}"
+        )
+
+        y -= 20
+
+        if desconto > 0:
+
+            if desconto_tipo == "Percentual":
+
+                c.drawString(
+                    50,
+                    y,
+                    f"Cupom Aplicado: {desconto_valor:.0f}% OFF"
+                )
+
+            else:
+
+                c.drawString(
+                    50,
+                    y,
+                    f"Cupom Aplicado: R$ {desconto_valor:.2f} OFF"
+                )
+
+            y -= 20
+
+            c.drawString(
+                50,
+                y,
+                f"Desconto: -R$ {desconto:.2f}"
+            )
+
+            y -= 20
+
+        c.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        c.drawString(
+            50,
+            y,
+            f"Total Pago: R$ {total:.2f}"
         )
 
         y -= 40
+
+        # =========================
+        # RODAPÉ
+        # =========================
 
         c.setFont(
             "Helvetica",

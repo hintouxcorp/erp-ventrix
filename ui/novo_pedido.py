@@ -314,7 +314,9 @@ class NovoPedidoWindow(QWidget):
             cliente=self.cliente_input.text(),
             telefone=self.telefone_input.text(),
             origem=self.origem_input.currentText(),
-            itens=self.itens
+            itens=self.itens,
+            desconto_tipo=self.desconto_tipo.currentText(),
+            desconto_valor=self.desconto_valor.value()
         )
 
         self.pedido_salvo.emit()
