@@ -8,10 +8,12 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QPushButton
 )
-
+from PyQt5.QtCore import pyqtSignal
 from services.comprovante_service import ComprovanteService
+from services.pedido_service import PedidoService
 
 class PedidoDetalheWindow(QDialog):
+    pedido_excluido = pyqtSignal()
 
     def __init__(self, pedido):
         super().__init__()
@@ -144,6 +146,33 @@ class PedidoDetalheWindow(QDialog):
         main.addWidget(resumo)
         main.addWidget(detalhes)
 
+        # =========================
+        # BOTÕES
+        # =========================
+
+        btn_excluir = QPushButton("Excluir Pedido")
+
+        btn_excluir.setStyleSheet("""
+            QPushButton {
+                background-color: #e74c3c;
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 6px;
+                font-weight: bold;
+            }
+
+            QPushButton:hover {
+                background-color: #c0392b;
+            }
+        """)
+
+        btn_excluir.clicked.connect(
+            self.excluir_pedido
+        )
+
+        main.addWidget(btn_excluir)
+
         btn_comprovante = QPushButton(
             "📄 Gerar Comprovante"
         )
@@ -185,6 +214,31 @@ class PedidoDetalheWindow(QDialog):
                 color: #2c3e50;
             }
         """)
+    
+    def excluir_pedido(self):
+
+        resposta = QMessageBox.question(
+            self,
+            "Confirmar exclusão",
+            "Deseja realmente excluir este pedido?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if resposta != QMessageBox.Yes:
+            return
+
+        PedidoService.excluir_pedido(
+            self.pedido["codigo"]
+        )
+
+        self.pedido_excluido.emit()
+        QMessageBox.information(
+            self,
+            "Sucesso",
+            "Pedido excluído com sucesso."
+        )
+        
+        self.accept()
 
     def gerar_comprovante(self):
 

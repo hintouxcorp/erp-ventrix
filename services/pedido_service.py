@@ -334,3 +334,22 @@ class PedidoService:
         conn.close()
 
         return total
+    
+    @staticmethod
+    def excluir_pedido(codigo):
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            DELETE FROM pedido_itens
+            WHERE pedido_codigo = ?
+        """, (codigo,))
+
+        cursor.execute("""
+            DELETE FROM pedidos
+            WHERE codigo = ?
+        """, (codigo,))
+
+        conn.commit()
+        conn.close()

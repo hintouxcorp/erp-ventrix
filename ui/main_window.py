@@ -131,6 +131,9 @@ class MainWindow(QMainWindow):
         pedido = pedidos[row]
 
         self.janela_detalhe = PedidoDetalheWindow(pedido)
+        self.janela_detalhe.pedido_excluido.connect(
+            self.atualizar_dashboard
+        )
         self.janela_detalhe.show()
 
     # =========================

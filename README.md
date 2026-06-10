@@ -1,4 +1,3 @@
-Markdown
 # 🚀 Vendrix ERP
 
 > Sistema de Planejamento de Recursos Empresariais (ERP) robusto, ágil e focado na eficiência operacional.
