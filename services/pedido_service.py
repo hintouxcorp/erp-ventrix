@@ -334,6 +334,37 @@ class PedidoService:
         conn.close()
 
         return total
+
+    @staticmethod
+    def editar_pedido(
+        codigo,
+        cliente,
+        telefone,
+        origem,
+        status
+    ):
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE pedidos
+            SET
+                cliente = ?,
+                telefone = ?,
+                origem = ?,
+                status = ?
+            WHERE codigo = ?
+        """, (
+            cliente,
+            telefone,
+            origem,
+            status,
+            codigo
+        ))
+
+        conn.commit()
+        conn.close()
     
     @staticmethod
     def excluir_pedido(codigo):

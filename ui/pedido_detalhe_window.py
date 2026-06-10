@@ -6,14 +6,17 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QWidget,
     QMessageBox,
-    QPushButton
+    QPushButton,
+    QHBoxLayout
 )
 from PyQt5.QtCore import pyqtSignal
 from services.comprovante_service import ComprovanteService
 from services.pedido_service import PedidoService
+from ui.editar_pedido_window import EditarPedidoWindow
 
 class PedidoDetalheWindow(QDialog):
     pedido_excluido = pyqtSignal()
+    pedido_editado = pyqtSignal()
 
     def __init__(self, pedido):
         super().__init__()
@@ -150,6 +153,23 @@ class PedidoDetalheWindow(QDialog):
         # BOTÕES
         # =========================
 
+        btn_editar = QPushButton("Editar Pedido")
+
+        btn_editar.setStyleSheet("""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 6px;
+                font-weight: bold;
+            }
+
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+
         btn_excluir = QPushButton("Excluir Pedido")
 
         btn_excluir.setStyleSheet("""
@@ -167,11 +187,20 @@ class PedidoDetalheWindow(QDialog):
             }
         """)
 
+        btn_editar.clicked.connect(
+            self.editar_pedido
+        )
+
         btn_excluir.clicked.connect(
             self.excluir_pedido
         )
 
-        main.addWidget(btn_excluir)
+        botoes = QHBoxLayout()
+
+        botoes.addWidget(btn_editar)
+        botoes.addWidget(btn_excluir)
+
+        main.addLayout(botoes)
 
         btn_comprovante = QPushButton(
             "📄 Gerar Comprovante"
@@ -214,6 +243,18 @@ class PedidoDetalheWindow(QDialog):
                 color: #2c3e50;
             }
         """)
+
+    def editar_pedido(self):
+
+        self.janela_editar = EditarPedidoWindow(
+            self.pedido
+        )
+
+        self.janela_editar.pedido_editado.connect(
+            self.accept
+        )
+
+        self.janela_editar.exec_()
     
     def excluir_pedido(self):
 
