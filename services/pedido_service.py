@@ -30,20 +30,9 @@ class PedidoService:
     @staticmethod
     def gerar_codigo():
 
-        data = datetime.now().strftime("%Y%m%d")
-
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "SELECT COUNT(*) FROM pedidos"
+        return datetime.now().strftime(
+            "PED-%Y%m%d-%H%M%S"
         )
-
-        total = cursor.fetchone()[0] + 1
-
-        conn.close()
-
-        return f"PED-{data}-{total:04d}"
 
     @staticmethod
     def criar_pedido(cliente, telefone, origem, itens):

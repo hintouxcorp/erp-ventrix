@@ -63,22 +63,57 @@ class NovoPedidoWindow(QWidget):
         self.custo_input = QDoubleSpinBox()
         self.custo_input.setMaximum(999999)
 
-        layout.addWidget(QLabel("Produto"))
-        layout.addWidget(self.produto_input)
+        self.desconto_tipo = QComboBox()
 
-        layout.addWidget(QLabel("Quantidade"))
-        layout.addWidget(self.quantidade_input)
+        self.desconto_tipo.addItems([
+            "Nenhum",
+            "Valor Fixo",
+            "Percentual"
+        ])
 
-        layout.addWidget(QLabel("Valor Unitário"))
-        layout.addWidget(self.valor_input)
+        self.desconto_valor = QDoubleSpinBox()
+        self.desconto_valor.setMaximum(999999)
 
-        layout.addWidget(QLabel("Custo Unitário"))
-        layout.addWidget(self.custo_input)
+        item_layout = QHBoxLayout()
+
+        # Produto
+        produto_col = QVBoxLayout()
+        produto_col.addWidget(QLabel("Produto"))
+        produto_col.addWidget(self.produto_input)
+
+        # Quantidade
+        quantidade_col = QVBoxLayout()
+        quantidade_col.addWidget(QLabel("Quantidade"))
+        quantidade_col.addWidget(self.quantidade_input)
+
+        # Valor
+        valor_col = QVBoxLayout()
+        valor_col.addWidget(QLabel("Valor Unitário"))
+        valor_col.addWidget(self.valor_input)
+
+        # Custo
+        custo_col = QVBoxLayout()
+        custo_col.addWidget(QLabel("Custo Unitário"))
+        custo_col.addWidget(self.custo_input)
+
+        item_layout.addLayout(produto_col, 4)
+        item_layout.addLayout(quantidade_col, 1)
+        item_layout.addLayout(valor_col, 1)
+        item_layout.addLayout(custo_col, 1)
+
+        layout.addLayout(item_layout)
 
         # botão adicionar item
         btn_add = QPushButton("Adicionar Item")
         btn_add.clicked.connect(self.adicionar_item)
-        layout.addWidget(btn_add)
+
+        btn_layout = QHBoxLayout()
+
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_add)
+        btn_layout.addStretch()
+
+        layout.addLayout(btn_layout)
 
         # -------------------------
         # TABELA CARRINHO
@@ -93,6 +128,60 @@ class NovoPedidoWindow(QWidget):
         ])
 
         layout.addWidget(self.tabela_itens)
+
+        # =========================
+        # DESCONTO + RESUMO
+        # =========================
+
+        resumo_layout = QHBoxLayout()
+
+        # Tipo desconto
+        tipo_layout = QVBoxLayout()
+        tipo_layout.addWidget(QLabel("Tipo de Desconto"))
+        tipo_layout.addWidget(self.desconto_tipo)
+
+        # Valor desconto
+        valor_layout = QVBoxLayout()
+        valor_layout.addWidget(QLabel("Valor do Desconto"))
+        valor_layout.addWidget(self.desconto_valor)
+
+        # Subtotal
+        subtotal_layout = QVBoxLayout()
+
+        self.subtotal_label = QLabel("R$ 0,00")
+
+        subtotal_layout.addWidget(QLabel("Subtotal"))
+        subtotal_layout.addWidget(self.subtotal_label)
+
+        # Desconto
+        desconto_layout = QVBoxLayout()
+
+        self.desconto_label = QLabel("R$ 0,00")
+
+        desconto_layout.addWidget(QLabel("Desconto"))
+        desconto_layout.addWidget(self.desconto_label)
+
+        resumo_layout.addLayout(tipo_layout)
+        resumo_layout.addLayout(valor_layout)
+        resumo_layout.addLayout(subtotal_layout)
+        resumo_layout.addLayout(desconto_layout)
+
+        layout.addLayout(resumo_layout)
+
+        # =========================
+        # TOTAL FINAL
+        # =========================
+
+        self.total_label = QLabel("R$ 0,00")
+
+        self.total_label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+        """)
+
+        layout.addWidget(QLabel("Total Final"))
+        layout.addWidget(self.total_label)
 
         # -------------------------
         # ORIGEM
@@ -116,7 +205,16 @@ class NovoPedidoWindow(QWidget):
         btn_salvar.clicked.connect(self.salvar)
         layout.addWidget(btn_salvar)
 
+        self.desconto_tipo.currentTextChanged.connect(
+            self.calcular_totais
+        )
+
+        self.desconto_valor.valueChanged.connect(
+            self.calcular_totais
+        )
+
         self.setLayout(layout)
+        self.calcular_totais()
 
     # =========================
     # CARRINHO
@@ -144,6 +242,44 @@ class NovoPedidoWindow(QWidget):
         self.atualizar_tabela()
         self.limpar_campos()
 
+    def calcular_totais(self):
+        subtotal = sum(
+            item["quantidade"] * item["valor"]
+            for item in self.itens
+        )
+
+        desconto = 0
+
+        if self.desconto_tipo.currentText() == "Valor Fixo":
+
+            desconto = self.desconto_valor.value()
+
+        elif self.desconto_tipo.currentText() == "Percentual":
+
+            desconto = (
+                subtotal *
+                self.desconto_valor.value() / 100
+            )
+
+        total_final = max(
+            0,
+            subtotal - desconto
+        )
+
+        self.subtotal_label.setText(
+            f"R$ {subtotal:.2f}"
+        )
+
+        self.desconto_label.setText(
+            f"R$ {desconto:.2f}"
+        )
+
+        self.total_label.setText(
+            f"R$ {total_final:.2f}"
+        )
+
+        self.total_pedido = total_final
+
     def atualizar_tabela(self):
 
         self.tabela_itens.setRowCount(len(self.itens))
@@ -156,6 +292,8 @@ class NovoPedidoWindow(QWidget):
             self.tabela_itens.setItem(row, 1, QTableWidgetItem(str(item["quantidade"])))
             self.tabela_itens.setItem(row, 2, QTableWidgetItem(f"R$ {item['valor']:.2f}"))
             self.tabela_itens.setItem(row, 3, QTableWidgetItem(f"R$ {total:.2f}"))
+        
+        self.calcular_totais()
 
     def limpar_campos(self):
         self.produto_input.clear()
